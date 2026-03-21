@@ -4,7 +4,7 @@
   "type": "module",
   "main": "source/app.jsx",
   "scripts": {
-    "start": "node source/app.jsx"
+    "start": "tsx source/app.jsx"
   },
   "keywords": [],
   "author": "",
@@ -13,5 +13,8 @@
   "dependencies": {
     "ink": "^6.8.0",
     "react": "^19.2.4"
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0"
   }
 }
