@@ -1,15 +1,15 @@
 {
-  "name": "terminal-snake",
+  "name": "terminal-games",
   "version": "1.0.0",
   "type": "module",
-  "main": "source/app.jsx",
   "scripts": {
-    "start": "tsx source/app.jsx"
+    "snake": "tsx source/snake/index.jsx",
+    "tetris": "tsx source/tetris/index.jsx"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "Snake game in your terminal, built with Ink + React",
+  "description": "Terminal games (Snake, Tetris) built with Ink + React",
   "dependencies": {
     "ink": "^6.8.0",
     "react": "^19.2.4"
