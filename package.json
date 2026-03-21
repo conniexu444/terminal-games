@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "snake": "tsx source/snake/index.jsx",
-    "tetris": "tsx source/tetris/index.jsx"
+    "tetris": "tsx source/tetris/index.jsx",
+    "timer": "tsx source/timer/index.jsx"
   },
   "keywords": [],
   "author": "",
