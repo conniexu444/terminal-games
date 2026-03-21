@@ -1,0 +1,17 @@
+{
+  "name": "terminal-snake",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "source/app.jsx",
+  "scripts": {
+    "start": "node source/app.jsx"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "Snake game in your terminal, built with Ink + React",
+  "dependencies": {
+    "ink": "^6.8.0",
+    "react": "^19.2.4"
+  }
+}
