@@ -2,72 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { render, Box, Text, useInput, useApp } from 'ink';
 
+import { DIGIT_H, DISPLAY_W, buildDisplayGrid } from './digits.js';
+
 // ── Layout ─────────────────────────────────────────────────────────────────────
 
 const TERM_W   = process.stdout.columns || 80;
 const W        = Math.floor((TERM_W - 2) / 2); // inner width in cells (each = ██)
-const BAR_ROWS = 5;                             // height of the block bar
-const DIGIT_H  = 7;                             // pixel digit height
-const DIGIT_W  = 5;                             // pixel digit width
-const DISPLAY_W = 25; // total display width: d d . d d (4 digits + colon + gaps)
-
-// ── Pixel digit sprites (5 wide × 7 tall) ─────────────────────────────────────
-
-const D = (top, tl, tr, mid, bl, br, bot) => [
-  [0, top, top, top, 0],
-  [tl,  0,  0,  0, tr],
-  [tl,  0,  0,  0, tr],
-  [0, mid, mid, mid, 0],
-  [bl,  0,  0,  0, br],
-  [bl,  0,  0,  0, br],
-  [0, bot, bot, bot, 0],
-];
-
-const DIGITS = [
-  D(1,1,1,0,1,1,1), // 0
-  [                  // 1 — full-height stroke with base serif
-    [0, 0, 1, 0, 0],
-    [0, 1, 1, 0, 0],
-    [0, 0, 1, 0, 0],
-    [0, 0, 1, 0, 0],
-    [0, 0, 1, 0, 0],
-    [0, 0, 1, 0, 0],
-    [0, 1, 1, 1, 0],
-  ],
-  D(1,0,1,1,1,0,1), // 2
-  D(1,0,1,1,0,1,1), // 3
-  D(0,1,1,1,0,1,0), // 4
-  D(1,1,0,1,0,1,1), // 5
-  D(1,1,0,1,1,1,1), // 6
-  D(1,0,1,0,0,1,0), // 7
-  D(1,1,1,1,1,1,1), // 8
-  D(1,1,1,1,0,1,1), // 9
-];
-
-// Colon: 1 wide × 7 tall
-const COLON = [[0],[0],[1],[0],[1],[0],[0]];
-
-// Build 7-row × 25-col display grid for MM:SS
-// Layout cols: [0-4]=d1 [5]=gap [6-10]=d2 [11]=gap [12]=colon [13]=gap [14-18]=d3 [19]=gap [20-24]=d4
-const buildDisplayGrid = (secs) => {
-  const mm = Math.min(99, Math.floor(secs / 60));
-  const ss = secs % 60;
-  const ds = [Math.floor(mm / 10), mm % 10, Math.floor(ss / 10), ss % 10];
-  const positions = [0, 6, 14, 20];
-
-  const grid = Array.from({ length: DIGIT_H }, () => new Array(DISPLAY_W).fill(0));
-
-  ds.forEach((d, i) => {
-    const sprite = DIGITS[d];
-    for (let r = 0; r < DIGIT_H; r++)
-      for (let c = 0; c < DIGIT_W; c++)
-        grid[r][positions[i] + c] = sprite[r][c];
-  });
-
-  for (let r = 0; r < DIGIT_H; r++) grid[r][12] = COLON[r][0];
-
-  return grid;
-};
+const BAR_ROWS = 5;
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -93,8 +34,6 @@ const parseInput = (str) => {
   if (isNaN(n) || n <= 0 || !Number.isInteger(n)) return null;
   return n;
 };
-
-// ── Border helpers ─────────────────────────────────────────────────────────────
 
 const EmptyRow = () => (
   <Text><Text color="gray">│</Text>{'  '.repeat(W)}<Text color="gray">│</Text></Text>
@@ -134,7 +73,6 @@ const App = () => {
     return () => clearInterval(id);
   }, [mode]);
 
-  // ── Input handling ───────────────────────────────────────────────────────────
   useInput((char, key) => {
     if (char === 'q' || char === 'Q') { exit(); return; }
 
@@ -167,7 +105,7 @@ const App = () => {
     }
   });
 
-  // ── Render: input screen ─────────────────────────────────────────────────────
+  // ── Input screen ─────────────────────────────────────────────────────────────
   if (mode === 'input') {
     return (
       <Box flexDirection="column">
@@ -178,7 +116,6 @@ const App = () => {
         <Text color="gray">{'┌' + '─'.repeat(W * 2) + '┐'}</Text>
         <EmptyRow /><EmptyRow /><EmptyRow />
 
-        {/* Input row */}
         <Text>
           <Text color="gray">│</Text>
           <Text>{'    '}</Text>
@@ -190,7 +127,6 @@ const App = () => {
         </Text>
         <EmptyRow />
 
-        {/* Hint */}
         <Text>
           <Text color="gray">│</Text>
           <Text>{'    '}</Text>
@@ -199,7 +135,6 @@ const App = () => {
           <Text color="gray">│</Text>
         </Text>
 
-        {/* Error */}
         <Text>
           <Text color="gray">│</Text>
           <Text>{'    '}</Text>
@@ -214,16 +149,15 @@ const App = () => {
     );
   }
 
-  // ── Render: timer screen ─────────────────────────────────────────────────────
-  const isDone    = mode === 'done';
-  const isPaused  = mode === 'paused';
-  const color     = isDone ? (flash ? 'white' : 'gray') : timerColor(remaining, total);
-  const showSecs  = remaining;
+  // ── Timer screen ─────────────────────────────────────────────────────────────
+  const isDone   = mode === 'done';
+  const isPaused = mode === 'paused';
+  const color    = isDone ? (flash ? 'white' : 'gray') : timerColor(remaining, total);
 
-  const displayGrid = buildDisplayGrid(showSecs);
-  const leftPad  = Math.floor((W - DISPLAY_W) / 2);
-  const rightPad = W - DISPLAY_W - leftPad;
-  const fillCells = isDone ? 0 : Math.round(remaining / total * W);
+  const displayGrid = buildDisplayGrid(remaining);
+  const leftPad     = Math.floor((W - DISPLAY_W) / 2);
+  const rightPad    = W - DISPLAY_W - leftPad;
+  const fillCells   = isDone ? 0 : Math.round(remaining / total * W);
 
   return (
     <Box flexDirection="column">
